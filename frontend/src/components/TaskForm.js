@@ -30,3 +30,4 @@ function TaskForm({ taskToEdit, onTaskSubmitted }) {
     </form>
   );
 }
+export default TaskForm;

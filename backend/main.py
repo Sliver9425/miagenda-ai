@@ -1,12 +1,22 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 import models
 import database
 import ia
+from fastapi.middleware.cors import CORSMiddleware
 
 models.Base.metadata.create_all(bind=database.engine)
 app = FastAPI()
+
+# CORS: permite conexión desde React
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # <== frontend en modo desarrollo
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db():
     db = database.SessionLocal()
