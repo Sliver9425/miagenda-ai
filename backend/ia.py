@@ -1,32 +1,34 @@
 from transformers import pipeline
 
-# Cargar el modelo de clasificación de sentimientos
 classifier = pipeline("text-classification", model="distilbert-base-uncased-finetuned-sst-2-english")
 
 def analizar_tarea(descripcion: str):
-    # Analizar el sentimiento del texto
-    result = classifier(descripcion)[0]
-    label = result['label'].lower()  # 'positive' o 'negative'
-    score = result['score']  # nivel de confianza (0-1)
-    
-    # Determinar prioridad basada en sentimiento y palabras clave
-    prioridad = determinar_prioridad(descripcion, label, score)
-    
-    # Extraer tags basados en palabras clave
+    # Primero extraemos los tags (para evitar influencia del sentimiento)
     tags = extraer_tags(descripcion)
+    
+    # Luego determinamos la prioridad (considerando los tags encontrados)
+    prioridad = determinar_prioridad(descripcion, tags)
     
     return prioridad, tags
 
-def determinar_prioridad(descripcion: str, sentimiento: str, confianza: float) -> str:
-    """Determina la prioridad basada en sentimiento, confianza y palabras clave"""
+def determinar_prioridad(descripcion: str, tags: list) -> str:
+    """Determina la prioridad basada en palabras clave y tags"""
     descripcion = descripcion.lower()
     
-    # Palabras clave que indican alta prioridad
-    palabras_alta = ["urgente", "importante", "necesario", "prioridad", "pronto"]
-    # Palabras clave que indican baja prioridad
-    palabras_baja = ["opcional", "cuando pueda", "sin prisa", "tranquilo", "cuando tengas tiempo"]
+    # Palabras clave que siempre indican alta prioridad
+    palabras_alta = [
+        "urgente", "importante", "necesario", "prioridad", "pronto", 
+        "final", "parcial", "examen", "entrega", "plazo", "deadline"
+    ]
     
-    # Si encuentra palabras clave explícitas
+    # Palabras clave que indican baja prioridad
+    palabras_baja = [
+        "opcional", "cuando pueda", "sin prisa", "tranquilo", 
+        "tiempo libre", "fin de semana", "cine", "película", 
+        "relaj", "diversión", "entretenimiento"
+    ]
+    
+    # 1. Verificar palabras clave explícitas primero
     for palabra in palabras_alta:
         if palabra in descripcion:
             return "alta"
@@ -35,21 +37,43 @@ def determinar_prioridad(descripcion: str, sentimiento: str, confianza: float) -
         if palabra in descripcion:
             return "baja"
     
-    # Si no hay palabras clave, usar el sentimiento del texto
-    if sentimiento == 'positive':
-        return "baja" if confianza > 0.9 else "normal"
-    else:
-        return "alta" if confianza > 0.7 else "normal"
+    # 2. Si no hay palabras clave, analizar por tags
+    if "estudio" in tags or "laboral" in tags:
+        # Solo usar el modelo de sentimientos para estos casos
+        result = classifier(descripcion)[0]
+        label = result['label'].lower()
+        
+        if label == 'negative':
+            return "alta"
+        else:
+            return "normal"
+    
+    # 3. Para entretenimiento y casos sin tags específicos
+    return "baja"
 
 def extraer_tags(descripcion: str) -> list:
     """Extrae tags basados en palabras clave en la descripción"""
     descripcion = descripcion.lower()
     tags = []
     
-    # Palabras clave para cada categoría
-    palabras_estudio = ["estudio", "examen", "tarea", "universidad", "escuela", "aprender"]
-    palabras_laboral = ["trabajo", "oficina", "jefe", "empleo", "reunión", "proyecto"]
-    palabras_entretenimiento = ["cine", "película", "juego", "diversión", "fiesta", "amigos"]
+    # Palabras clave ampliadas para cada categoría
+    palabras_estudio = [
+        "estudiar", "estudio", "examen", "parcial", "final", 
+        "tarea", "universidad", "escuela", "aprender", "repasar",
+        "apuntes", "ejercicio", "capitulo", "materia", "clase"
+    ]
+    
+    palabras_laboral = [
+        "trabajo", "oficina", "jefe", "empleo", "reunión", 
+        "proyecto", "presentación", "informe", "cliente", 
+        "laboral", "empresa", "equipo"
+    ]
+    
+    palabras_entretenimiento = [
+        "cine", "película", "pelicula", "juego", "diversión", 
+        "fiesta", "amigos", "salir", "descanso", "ocio", 
+        "relaj", "entretenimiento", "recreación", "pasatiempo"
+    ]
     
     # Verificar cada categoría
     if any(palabra in descripcion for palabra in palabras_estudio):
