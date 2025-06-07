@@ -1,64 +1,90 @@
 import React, { useEffect, useState } from 'react';
 import { getTasks, deleteTask } from '../services/api';
 import TaskItem from './TaskItem';
-import TaskForm from './TaskForm'; // ✅ Importar el formulario
+import TaskForm from './TaskForm';
+import PriorityFilter from './PriorityFilter';
 
 function TaskList() {
-  const [tasks, setTasks] = useState([]);
-  const [editingTask, setEditingTask] = useState(null); // ✅ Tarea que se está editando
-  const [showForm, setShowForm] = useState(false); // ✅ Mostrar u ocultar el formulario
+    const [tasks, setTasks] = useState([]);
+    const [filteredTasks, setFilteredTasks] = useState([]);
+    const [editingTask, setEditingTask] = useState(null);
+    const [showForm, setShowForm] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+    useEffect(() => {
+        fetchTasks();
+    }, []);
 
-  const fetchTasks = async () => {
-    const response = await getTasks();
-    setTasks(response.data);
-  };
+    const fetchTasks = async (priority = '') => {
+        try {
+            setLoading(true);
+            const response = await getTasks(priority);
+            setTasks(response.data);
+            setFilteredTasks(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching tasks:", error);
+            setLoading(false);
+        }
+    };
 
-  const handleDelete = async (id) => {
-    await deleteTask(id);
-    fetchTasks(); // Actualizar lista
-  };
+    const handlePriorityChange = (priority) => {
+        fetchTasks(priority);
+    };
 
-  const handleEdit = (task) => {
-    setEditingTask(task);
-    setShowForm(true);
-  };
+    const handleDelete = async (id) => {
+        await deleteTask(id);
+        fetchTasks();
+    };
 
-  const handleTaskSubmitted = () => {
-    setShowForm(false);
-    setEditingTask(null);
-    fetchTasks(); // Recargar tareas luego de crear/editar
-  };
+    const handleEdit = (task) => {
+        setEditingTask(task);
+        setShowForm(true);
+    };
 
-  return (
-    <div>
-      <h2>Tareas</h2>
-
-      <button onClick={() => {
+    const handleTaskSubmitted = () => {
+        setShowForm(false);
         setEditingTask(null);
-        setShowForm(!showForm);
-      }}>
-        {showForm ? 'Cancelar' : 'Crear Tarea'}
-      </button>
+        fetchTasks();
+    };
 
-      {showForm && (
-        <TaskForm taskToEdit={editingTask} onTaskSubmitted={handleTaskSubmitted} />
-      )}
+    return (
+        <div className="task-list">
+            <h2>Mi Agenda</h2>
+            
+            <div className="controls">
+                <button onClick={() => setShowForm(!showForm)}>
+                    {showForm ? 'Cancelar' : 'Nueva Tarea'}
+                </button>
+                
+                <PriorityFilter onPriorityChange={handlePriorityChange} />
+            </div>
 
-      {tasks.map(task => (
-        <TaskItem 
-          key={task.id} 
-          task={task} 
-          onDelete={handleDelete} 
-          onEdit={handleEdit} // ✅ Pasar handler para editar
-        />
-      ))}
-    </div>
-  );
+            {showForm && (
+                <TaskForm 
+                    taskToEdit={editingTask} 
+                    onTaskSubmitted={handleTaskSubmitted} 
+                />
+            )}
+
+            {loading ? (
+                <p>Cargando tareas...</p>
+            ) : filteredTasks.length === 0 ? (
+                <p>No hay tareas para mostrar</p>
+            ) : (
+                <div className="tasks-container">
+                    {filteredTasks.map(task => (
+                        <TaskItem 
+                            key={task.id} 
+                            task={task} 
+                            onDelete={handleDelete} 
+                            onEdit={handleEdit} 
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
 }
 
 export default TaskList;
-

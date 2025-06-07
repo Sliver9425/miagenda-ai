@@ -1,9 +1,24 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000'; // Cambiar en producción
+const api = axios.create({
+    baseURL: 'http://localhost:8000',
+});
 
-export const createTask = (taskData) => axios.post(`${API_URL}/tasks/`, taskData);
-export const getTasks = () => axios.get(`${API_URL}/tasks/`);
-export const updateTask = (id, taskData) => axios.put(`${API_URL}/tasks/${id}`, taskData);
-export const deleteTask = (id) => axios.delete(`${API_URL}/tasks/${id}`);
+export const getTasks = (priority = '') => {
+    return api.get('/tasks', {
+        params: { priority }
+    });
+};
+
+export const createTask = (taskData) => {
+    return api.post('/tasks', taskData);
+};
+
+export const updateTask = (id, taskData) => {
+    return api.put(`/tasks/${id}`, taskData);
+};
+
+export const deleteTask = (id) => {
+    return api.delete(`/tasks/${id}`);
+};
 
