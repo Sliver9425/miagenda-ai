@@ -14,7 +14,10 @@ app = FastAPI()
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # puedes añadir aquí la URL de tu frontend desplegado si es necesario
+    allow_origins=[
+        "http://localhost:3000",
+        "https://miagendaai-frontend.onrender.com"  # Agrega aquí tu URL real del frontend en producción
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -104,7 +107,12 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Task deleted successfully"}
 
-# Bloque para ejecutar correctamente en Render
+# Endpoint raíz para evitar 404 en /
+@app.get("/")
+def root():
+    return {"message": "MiAgendaIA backend en funcionamiento"}
+
+# Ejecutar Uvicorn localmente si hace falta
 if __name__ == "__main__":
     import os
     import uvicorn
