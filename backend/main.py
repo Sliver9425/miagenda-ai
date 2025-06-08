@@ -8,12 +8,13 @@ import ia
 from fastapi.middleware.cors import CORSMiddleware
 
 models.Base.metadata.create_all(bind=database.engine)
+
 app = FastAPI()
 
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000"],  # puedes añadir aquí la URL de tu frontend desplegado si es necesario
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,7 +55,7 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)):
         description=task.description,
         priority=priority,
         tags=",".join(tags)
-    )  # <-- Aquí estaba el error, faltaba cerrar este paréntesis
+    )
     db.add(new_task)
     db.commit()
     db.refresh(new_task)
@@ -94,8 +95,6 @@ def update_task(task_id: int, task_data: TaskUpdate, db: Session = Depends(get_d
     db.refresh(task)
     return task
 
-# Eliminar tarea
-
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int, db: Session = Depends(get_db)):
     task = db.query(models.Task).get(task_id)
@@ -104,3 +103,10 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
     db.delete(task)
     db.commit()
     return {"message": "Task deleted successfully"}
+
+# Bloque para ejecutar correctamente en Render
+if __name__ == "__main__":
+    import os
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
