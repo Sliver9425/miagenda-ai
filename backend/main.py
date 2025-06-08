@@ -16,7 +16,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://miagendaai-frontend.onrender.com"  # Agrega aquí tu URL real del frontend en producción
+        "https://miagenda-ai.onrender.com"  # Agrega aquí tu URL real del frontend en producción
     ],
     allow_credentials=True,
     allow_methods=["*"],
