@@ -2,16 +2,16 @@ import os
 import requests
 
 def analizar_tarea(descripcion: str):
-    # Primero extraemos los tags (para fines informativos)
+    # Primero extraemos los tags (para evitar influencia del sentimiento)
     tags = extraer_tags(descripcion)
     
-    # Luego determinamos la prioridad (considerando análisis de sentimiento siempre)
+    # Luego determinamos la prioridad (considerando los tags encontrados)
     prioridad = determinar_prioridad(descripcion, tags)
     
     return prioridad, tags
 
 def determinar_prioridad(descripcion: str, tags: list) -> str:
-    """Determina la prioridad basada en palabras clave y análisis de sentimiento"""
+    """Determina la prioridad basada en palabras clave y tags"""
     descripcion = descripcion.lower()
     
     palabras_alta = [
@@ -25,23 +25,23 @@ def determinar_prioridad(descripcion: str, tags: list) -> str:
         "relaj", "diversión", "entretenimiento"
     ]
     
-    # Si hay palabras de alta prioridad, asignar 'alta'
     for palabra in palabras_alta:
         if palabra in descripcion:
             return "alta"
             
-    # Si hay palabras de baja prioridad, asignar 'baja'
     for palabra in palabras_baja:
         if palabra in descripcion:
             return "baja"
     
-    # Siempre analizamos el sentimiento para asignar prioridad si no hubo coincidencias anteriores
-    result = analizar_sentimiento(descripcion)
-    
-    if result == "NEGATIVE":
-        return "alta"
-    else:
-        return "normal"
+    if "estudio" in tags or "laboral" in tags:
+        # Llamada a la API de Hugging Face con traducción previa
+        result = analizar_sentimiento(descripcion)
+        if result == "NEGATIVE":
+            return "alta"
+        else:
+            return "normal"
+
+    return "baja"
 
 def extraer_tags(descripcion: str) -> list:
     descripcion = descripcion.lower()
@@ -111,4 +111,5 @@ def analizar_sentimiento(texto: str) -> str:
         print(f"Error al analizar sentimiento: {e}")
     
     return "NEUTRAL"
+
 
