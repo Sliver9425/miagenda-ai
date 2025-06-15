@@ -165,7 +165,7 @@ export default function SignIn() {
             <Button
               fullWidth
               variant="outlined"
-              onClick={() => signIn?.authenticateWithRedirect({ strategy: 'oauth_google' })}
+              onClick={() => signIn?.authenticateWithRedirect({ strategy: 'oauth_google', redirectUrl: '/tasks' })}
               startIcon={<GoogleIcon />}
             >
               Sign in with Google

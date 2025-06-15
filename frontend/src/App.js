@@ -1,7 +1,7 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import TaskList from './components/TaskList';
+import TaskList from './components/TaskList.js';
 import SignIn from './pages/SignIn.jsx';
 import { FaClipboardList } from 'react-icons/fa';
 
