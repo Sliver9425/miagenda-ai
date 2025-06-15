@@ -1,13 +1,13 @@
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import TaskList from './components/TaskList';
 import SignIn from './pages/SignIn.jsx';
 import { FaClipboardList } from 'react-icons/fa';
 
 function App() {
   return (
-    <Router>
+    <>
       {/* Barra de navegación */}
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div className="container">
@@ -26,10 +26,11 @@ function App() {
           <Route path="/tasks" element={<TaskList />} />
         </Routes>
       </main>
-    </Router>
+    </>
   );
 }
 
 export default App;
+
 
 
